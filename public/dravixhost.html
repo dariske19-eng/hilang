@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DravixHost</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#071B12;
+    --dark:#0C3722;
+    --mid:#1C7A46;
+    --light:#9CFA4C;
+    --pale:#EFFFE2;
+    --white:#FFFFFF;
+    --radius-blob: 62% 38% 55% 45% / 45% 55% 45% 55%;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{
+    font-family:'Inter', sans-serif;
+    background:var(--ink);
+    color:var(--white);
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding: 40px 24px;
+    overflow:hidden;
+    position:relative;
+  }
+  a{ color:inherit; text-decoration:none; }
+  ::selection{ background:var(--light); color:var(--ink); }
+
+  .blob{
+    position:absolute;
+    border-radius: var(--radius-blob);
+    animation: morph 9s ease-in-out infinite alternate;
+    z-index:0;
+  }
+  @keyframes morph{
+    0%{ border-radius: 62% 38% 55% 45% / 45% 55% 45% 55%; }
+    50%{ border-radius: 45% 55% 40% 60% / 60% 40% 60% 40%; }
+    100%{ border-radius: 55% 45% 65% 35% / 40% 60% 35% 65%; }
+  }
+  .blob-1{ width:600px; height:600px; background: var(--mid); top:-220px; right:-180px; opacity:.45; }
+  .blob-2{ width:340px; height:340px; background: var(--light); bottom:-140px; left:-110px; opacity:.15; animation-duration: 11s; }
+  @media (prefers-reduced-motion: reduce){ .blob{ animation:none; } }
+
+  .content{ position:relative; z-index:2; max-width:520px; display:flex; flex-direction:column; align-items:center; }
+
+  .logo-ring{
+    position:relative;
+    width:150px; height:150px;
+    margin-bottom:34px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .logo-ring::before{
+    content:'';
+    position:absolute;
+    inset:-14px;
+    border-radius:50%;
+    border:1.5px dashed rgba(156,250,76,.35);
+    animation: spin 16s linear infinite;
+  }
+  .logo-ring::after{
+    content:'';
+    position:absolute;
+    inset:-30px;
+    border-radius:50%;
+    border:1px dashed rgba(156,250,76,.15);
+    animation: spin 24s linear infinite reverse;
+  }
+  @keyframes spin{ from{ transform:rotate(0deg); } to{ transform:rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce){ .logo-ring::before, .logo-ring::after{ animation:none; } }
+
+  .logo-core{
+    width:120px; height:120px;
+    border-radius:32px;
+    background: linear-gradient(150deg, var(--light), var(--mid));
+    display:flex; align-items:center; justify-content:center;
+    box-shadow: 0 26px 54px rgba(0,0,0,.4);
+    animation: float 3.6s ease-in-out infinite;
+  }
+  .logo-core img{ width:70%; border-radius:16px; }
+  @keyframes float{
+    0%,100%{ transform: translateY(0); }
+    50%{ transform: translateY(-10px); }
+  }
+  @media (prefers-reduced-motion: reduce){ .logo-core{ animation:none; } }
+
+  .status-tag{
+    display:inline-flex; align-items:center; gap:8px;
+    background:rgba(156,250,76,.1);
+    border:1px solid rgba(156,250,76,.35);
+    color:var(--light);
+    padding:7px 16px; border-radius:100px;
+    font-size:.85rem; font-weight:500;
+    margin-bottom:22px;
+  }
+  .status-tag .dot{ width:7px; height:7px; border-radius:50%; background:var(--light); animation: pulse-dot 1.8s ease-in-out infinite; }
+  @keyframes pulse-dot{ 0%,100%{ transform:scale(1); opacity:1; } 50%{ transform:scale(1.5); opacity:.5; } }
+
+  h1{
+    font-family:'Bricolage Grotesque', sans-serif;
+    font-weight:700;
+    font-size: clamp(2.1rem, 6vw, 3.1rem);
+    margin-bottom:14px;
+  }
+  h1 span{ color: var(--light); }
+  p{
+    color: rgba(255,255,255,.65);
+    font-size:1.05rem;
+    max-width:40ch;
+    margin: 0 auto 38px;
+  }
+
+  .btn-primary{
+    position:relative;
+    background:var(--light); color:var(--ink);
+    padding:17px 34px; border-radius:100px;
+    font-weight:600; font-size:1.02rem;
+    display:inline-flex; align-items:center; gap:10px;
+    transition: box-shadow .2s ease, transform .2s ease;
+    will-change: transform;
+  }
+  .btn-primary:hover{ box-shadow: 0 14px 30px rgba(156,250,76,.32); }
+  .btn-primary .arrow{ transition: transform .25s ease; }
+  .btn-primary:hover .arrow{ transform: translateX(4px); }
+
+  footer{
+    position:relative; z-index:2;
+    margin-top:56px;
+    font-size:.82rem;
+    color: rgba(255,255,255,.4);
+  }
+  footer span{ color: var(--light); }
+</style>
+</head>
+<body>
+
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+
+  <div class="content">
+    <span class="status-tag"><span class="dot"></span>Server Aktif</span>
+
+    <div class="logo-ring">
+      <div class="logo-core">
+        <img src="https://i.ibb.co/39Xrd0DP/SGN-09-01-2026-1788245748548.png" alt="Logo DravixHost">
+      </div>
+    </div>
+
+    <h1>Dravix<span>Host</span></h1>
+    <p>Hosting yang pantas, stabil dan sedia bila-bila masa anda perlukan. Semua perkhidmatan penuh boleh diakses di laman utama kami.</p>
+
+    <a href="#" id="mainSiteBtn" class="btn-primary" data-magnetic>
+      Pergi ke Web Utama
+      <span class="arrow">→</span>
+    </a>
+  </div>
+
+  <footer>© 2026 <span>DravixHost</span>. Hak cipta terpelihara.</footer>
+
+<script>
+  // Tukar '#' di bawah kepada URL sebenar laman utama DravixHost anda
+  document.getElementById('mainSiteBtn').setAttribute('href', 'https://dravixhost.my.id');
+
+  document.querySelectorAll('[data-magnetic]').forEach(btn => {
+    btn.addEventListener('mousemove', e => {
+      const r = btn.getBoundingClientRect();
+      const x = e.clientX - r.left - r.width / 2;
+      const y = e.clientY - r.top - r.height / 2;
+      btn.style.transform = `translate(${x * 0.2}px, ${y * 0.3}px)`;
+    });
+    btn.addEventListener('mouseleave', () => { btn.style.transform = ''; });
+  });
+</script>
+
+</body>
+</html>

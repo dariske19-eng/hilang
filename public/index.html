@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Drizz — UI Developer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#071B12;
+    --dark:#0C3722;
+    --mid:#1C7A46;
+    --light:#9CFA4C;
+    --pale:#EFFFE2;
+    --white:#FFFFFF;
+    --text-soft:#2F5240;
+    --radius-blob: 62% 38% 55% 45% / 45% 55% 45% 55%;
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+
+  body{
+    font-family:'Inter', sans-serif;
+    background:var(--white);
+    color:var(--ink);
+    overflow-x:hidden;
+    line-height:1.55;
+  }
+
+  h1,h2,h3,.display{
+    font-family:'Bricolage Grotesque', sans-serif;
+    font-weight:600;
+    line-height:1.05;
+    letter-spacing:-0.01em;
+  }
+
+  a{color:inherit; text-decoration:none;}
+  img{display:block; max-width:100%;}
+  button{font-family:inherit; cursor:pointer; border:none; background:none;}
+
+  :focus-visible{
+    outline: 3px solid var(--mid);
+    outline-offset: 3px;
+  }
+
+  ::selection{ background:var(--light); color:var(--ink); }
+
+  .wrap{
+    width:100%;
+    max-width:1180px;
+    margin:0 auto;
+    padding:0 28px;
+  }
+
+  /* ---------- CUSTOM CURSOR ---------- */
+  .cursor-dot{
+    position:fixed;
+    top:0; left:0;
+    width:16px; height:16px;
+    border-radius:50%;
+    background:var(--light);
+    pointer-events:none;
+    z-index:9999;
+    mix-blend-mode:difference;
+    transform: translate(-50%,-50%);
+    transition: width .25s ease, height .25s ease, background .25s ease;
+  }
+  .cursor-dot.hovering{
+    width:44px; height:44px;
+    background:rgba(156,250,76,.5);
+  }
+  @media (pointer:coarse){ .cursor-dot{ display:none; } }
+
+  /* ---------- SCROLL PROGRESS ---------- */
+  .progress-bar{
+    position:fixed;
+    top:0; left:0;
+    height:3px;
+    width:0%;
+    background:var(--light);
+    z-index:1000;
+    transition: width .1s linear;
+  }
+
+  /* ---------- REVEAL ---------- */
+  .reveal{
+    opacity:0;
+    transform: translateY(28px);
+    transition: opacity .7s cubic-bezier(.2,.7,.2,1), transform .7s cubic-bezier(.2,.7,.2,1);
+  }
+  .reveal.in{ opacity:1; transform:translateY(0); }
+  @media (prefers-reduced-motion: reduce){
+    .reveal{ opacity:1; transform:none; transition:none; }
+  }
+
+  /* ---------- NAV ---------- */
+  header{
+    position:fixed;
+    top:0; left:0; right:0;
+    z-index:100;
+    padding:20px 0;
+    transition: background .3s ease, box-shadow .3s ease, padding .3s ease;
+  }
+  header.scrolled{
+    background:rgba(255,255,255,.85);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 2px 30px rgba(7,27,18,.08);
+    padding:13px 0;
+  }
+  .nav-inner{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:24px;
+  }
+  .brand{ display:flex; align-items:center; gap:10px; }
+  .brand img{ width:40px; height:40px; border-radius:12px; }
+  .brand span{
+    font-family:'Bricolage Grotesque', sans-serif;
+    font-weight:700;
+    font-size:1.35rem;
+  }
+  nav ul{ list-style:none; display:flex; gap:34px; }
+  nav a{ font-size:.95rem; font-weight:500; position:relative; padding:4px 0; }
+  nav a::after{
+    content:''; position:absolute; left:0; bottom:0;
+    width:0%; height:2px; background:var(--mid);
+    transition:width .25s ease;
+  }
+  nav a:hover::after{ width:100%; }
+  .nav-cta{ display:none; align-items:center; gap:12px; }
+  .nav-cta a{
+    background:var(--ink); color:var(--white);
+    padding:12px 24px; border-radius:100px;
+    font-weight:600; font-size:.92rem;
+    display:inline-block;
+    transition: transform .2s ease, background .2s ease;
+  }
+  .nav-cta a:hover{ background:var(--mid); transform:translateY(-2px); }
+  .burger{
+    width:44px; height:44px; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; gap:5px;
+  }
+  .burger span{ width:22px; height:2px; background:var(--ink); border-radius:2px; }
+
+  /* ---------- HERO ---------- */
+  .hero{
+    position:relative;
+    padding: 160px 0 110px;
+    background: var(--ink);
+    color: var(--white);
+    overflow:hidden;
+  }
+  .blob{
+    position:absolute;
+    border-radius: var(--radius-blob);
+    animation: morph 9s ease-in-out infinite alternate;
+  }
+  @keyframes morph{
+    0%{ border-radius: 62% 38% 55% 45% / 45% 55% 45% 55%; }
+    50%{ border-radius: 45% 55% 40% 60% / 60% 40% 60% 40%; }
+    100%{ border-radius: 55% 45% 65% 35% / 40% 60% 35% 65%; }
+  }
+  .hero .blob-1{ width:600px; height:600px; background: var(--mid); top:-200px; right:-160px; opacity:.5; }
+  .hero .blob-2{ width:320px; height:320px; background: var(--light); bottom:-110px; left:-90px; opacity:.18; animation-duration: 11s; }
+
+  .hero-inner{
+    position:relative; z-index:2;
+    display:grid; grid-template-columns: 1.15fr .85fr;
+    gap:48px; align-items:center;
+  }
+  .eyebrow-tag{
+    display:inline-flex; align-items:center; gap:8px;
+    background:rgba(156,250,76,.12);
+    border:1px solid rgba(156,250,76,.4);
+    color:var(--light);
+    padding:7px 16px; border-radius:100px;
+    font-size:.85rem; font-weight:500;
+    margin-bottom:24px;
+  }
+  .eyebrow-tag .dot{ width:7px; height:7px; border-radius:50%; background:var(--light);
+    animation: pulse-dot 1.8s ease-in-out infinite; }
+  @keyframes pulse-dot{
+    0%,100%{ transform:scale(1); opacity:1; }
+    50%{ transform:scale(1.5); opacity:.5; }
+  }
+  .hero h1{
+    font-size: clamp(2.5rem, 5.4vw, 4.1rem);
+    color:var(--white);
+    margin-bottom:18px;
+    max-width: 12ch;
+  }
+  .hero h1 em{ font-style:normal; color:var(--light); }
+  .role-line{
+    font-family:'Bricolage Grotesque', sans-serif;
+    font-size:1.2rem;
+    font-weight:600;
+    color:var(--light);
+    height:1.6em;
+    margin-bottom:18px;
+  }
+  .role-line .cursor-blink{
+    display:inline-block;
+    width:2px; height:1.1em;
+    background:var(--light);
+    margin-left:2px;
+    vertical-align:middle;
+    animation: blink 1s step-end infinite;
+  }
+  @keyframes blink{ 50%{ opacity:0; } }
+  .hero p{
+    font-size:1.08rem;
+    color:rgba(255,255,255,.72);
+    max-width:46ch;
+    margin-bottom:34px;
+  }
+  .btn-row{ display:flex; gap:16px; flex-wrap:wrap; }
+  .btn-primary{
+    background:var(--light); color:var(--ink);
+    padding:16px 30px; border-radius:100px;
+    font-weight:600; font-size:1rem;
+    display:inline-block;
+    transition: box-shadow .2s ease;
+    will-change: transform;
+  }
+  .btn-primary:hover{ box-shadow: 0 12px 26px rgba(156,250,76,.3); }
+  .btn-ghost{
+    border:1.5px solid rgba(255,255,255,.35); color:var(--white);
+    padding:16px 30px; border-radius:100px; font-weight:600; font-size:1rem;
+    transition: border-color .2s ease, background .2s ease, transform .2s ease;
+  }
+  .btn-ghost:hover{ border-color:var(--white); background:rgba(255,255,255,.06); transform:translateY(-2px); }
+
+  /* orbiting hero art */
+  .hero-art{ position:relative; display:flex; align-items:center; justify-content:center; height:380px; }
+  .orbit-core{
+    position:relative;
+    width:118px; height:118px;
+    border-radius:32px;
+    background: linear-gradient(150deg, var(--light), var(--mid));
+    display:flex; align-items:center; justify-content:center;
+    box-shadow: 0 30px 60px rgba(0,0,0,.35);
+    z-index:2;
+  }
+  .orbit-core img{ width:58%; border-radius:14px; }
+  .orbit-ring{
+    position:absolute;
+    border:1px dashed rgba(255,255,255,.18);
+    border-radius:50%;
+    top:50%; left:50%;
+  }
+  .orbit-ring.r1{ width:220px; height:220px; margin:-110px 0 0 -110px; animation: spin 18s linear infinite; }
+  .orbit-ring.r2{ width:330px; height:330px; margin:-165px 0 0 -165px; animation: spin 26s linear infinite reverse; }
+  @keyframes spin{ from{ transform:rotate(0deg); } to{ transform:rotate(360deg); } }
+  .chip{
+    position:absolute;
+    background:rgba(255,255,255,.06);
+    border:1px solid rgba(255,255,255,.16);
+    color:var(--white);
+    font-size:.78rem;
+    font-weight:500;
+    padding:7px 14px;
+    border-radius:100px;
+    white-space:nowrap;
+    backdrop-filter: blur(4px);
+  }
+  .orbit-ring.r1 .chip{ animation: spin 18s linear infinite reverse; }
+  .orbit-ring.r2 .chip{ animation: spin 26s linear infinite; }
+  .chip-1{ top:-14px; left:50%; transform:translateX(-50%); }
+  .chip-2{ bottom:-14px; left:50%; transform:translateX(-50%); }
+  .chip-3{ top:50%; left:-14px; transform:translateY(-50%); }
+  .chip-4{ top:50%; right:-14px; transform:translateY(-50%); }
+  @media (prefers-reduced-motion: reduce){
+    .orbit-ring, .orbit-ring .chip, .blob{ animation:none; }
+  }
+
+  /* ---------- MARQUEE ---------- */
+  .marquee-strip{
+    background: var(--light); color: var(--ink);
+    transform: rotate(-1.4deg);
+    margin: -34px 0 0;
+    position:relative; z-index:3;
+    overflow:hidden; white-space:nowrap;
+    border-top:3px solid var(--ink);
+    border-bottom:3px solid var(--ink);
+  }
+  .marquee-track{ display:inline-flex; animation: scroll 24s linear infinite; }
+  .marquee-track span{
+    font-family:'Bricolage Grotesque', sans-serif;
+    font-weight:600; font-size:1.25rem;
+    padding: 14px 26px; display:inline-flex; align-items:center; gap:26px;
+  }
+  .marquee-track span::after{ content:'●'; font-size:.65rem; }
+  @keyframes scroll{ from{ transform:translateX(0); } to{ transform:translateX(-50%); } }
+  @media (prefers-reduced-motion: reduce){ .marquee-track{ animation:none; } }
+
+  /* ---------- SECTION GENERIC ---------- */
+  section{ padding: 110px 0; position:relative; }
+  .section-head{ max-width: 44ch; margin-bottom: 56px; }
+  .section-head .kicker{ color:var(--mid); font-weight:600; font-size:.95rem; margin-bottom:10px; display:block; }
+  .section-head h2{ font-size: clamp(2rem, 3.6vw, 2.7rem); }
+  .section-head p{ margin-top:16px; font-size:1.05rem; color:var(--text-soft); max-width:52ch; }
+
+  /* ---------- SKILLS ---------- */
+  .skills-grid{
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap:22px;
+  }
+  .skill-card{
+    background: var(--pale);
+    border-radius: 24px;
+    padding: 32px 26px;
+    transition: transform .15s ease, box-shadow .3s ease;
+    transform-style: preserve-3d;
+    will-change: transform;
+  }
+  .skill-card:hover{ box-shadow: 0 20px 40px rgba(12,55,34,.14); }
+  .skill-icon{
+    width:52px; height:52px; border-radius:16px;
+    background:var(--ink); color:var(--light);
+    display:flex; align-items:center; justify-content:center;
+    font-size:1.4rem; margin-bottom:20px;
+  }
+  .skill-card h3{ font-size:1.2rem; margin-bottom:8px; }
+  .skill-card p{ color:var(--text-soft); font-size:.94rem; }
+
+  /* ---------- PROJEK (empty state) ---------- */
+  .projek-section{ background:var(--ink); color:var(--white); }
+  .projek-section .section-head h2{ color:var(--white); }
+  .projek-section .section-head p{ color:rgba(255,255,255,.6); }
+  .projek-section .section-head .kicker{ color:var(--light); }
+  .projek-grid{
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap:22px;
+  }
+  .projek-slot{
+    position:relative;
+    border-radius:22px;
+    border: 1.5px dashed rgba(255,255,255,.25);
+    min-height:220px;
+    padding:26px;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    overflow:hidden;
+  }
+  .projek-slot::before{
+    content:'';
+    position:absolute;
+    inset:0;
+    background: linear-gradient(100deg, transparent 30%, rgba(156,250,76,.08) 50%, transparent 70%);
+    background-size: 200% 100%;
+    animation: shimmer 3.4s linear infinite;
+  }
+  @keyframes shimmer{
+    0%{ background-position: 200% 0; }
+    100%{ background-position: -200% 0; }
+  }
+  .projek-slot .badge{
+    align-self:flex-start;
+    font-size:.78rem;
+    font-weight:600;
+    color:var(--light);
+    background:rgba(156,250,76,.1);
+    border:1px solid rgba(156,250,76,.3);
+    padding:5px 12px;
+    border-radius:100px;
+  }
+  .projek-slot .plus{
+    width:44px; height:44px;
+    border-radius:50%;
+    border:1.5px dashed rgba(255,255,255,.3);
+    display:flex; align-items:center; justify-content:center;
+    font-size:1.3rem;
+    color:rgba(255,255,255,.4);
+  }
+  @media (prefers-reduced-motion: reduce){ .projek-slot::before{ animation:none; } }
+
+  .projek-card{
+    position:relative;
+    border-radius:22px;
+    background: var(--dark);
+    border: 1.5px solid rgba(255,255,255,.1);
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    transition: transform .3s ease, box-shadow .3s ease, border-color .3s ease;
+  }
+  a.projek-card{ cursor:pointer; }
+  a.projek-card:hover{ border-color: rgba(156,250,76,.4); }
+  .projek-card:hover{
+    transform: translateY(-6px);
+    box-shadow: 0 22px 44px rgba(0,0,0,.35);
+  }
+  .projek-banner{
+    position:relative;
+    aspect-ratio: 16/9;
+    overflow:hidden;
+  }
+  .projek-banner img{
+    width:100%; height:100%;
+    object-fit:cover;
+    transition: transform .5s ease;
+  }
+  .projek-card:hover .projek-banner img{ transform: scale(1.06); }
+  .projek-banner .badge-soon{
+    position:absolute;
+    top:14px; right:14px;
+    font-size:.76rem;
+    font-weight:600;
+    color:var(--ink);
+    background:var(--light);
+    padding:6px 13px;
+    border-radius:100px;
+    display:flex; align-items:center; gap:6px;
+    z-index:2;
+  }
+  .badge-soon .ping{
+    width:6px; height:6px; border-radius:50%;
+    background:var(--ink);
+    animation: pulse-dot 1.6s ease-in-out infinite;
+  }
+  .projek-card-body{
+    padding:22px 24px 26px;
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .projek-card-body .tag{
+    font-size:.78rem;
+    font-weight:600;
+    color:var(--light);
+  }
+  .projek-card-body h3{
+    font-size:1.25rem;
+    color:var(--white);
+  }
+  .projek-card-body p{
+    font-size:.92rem;
+    color:rgba(255,255,255,.6);
+  }
+
+  /* ---------- TENTANG ---------- */
+  .tentang{
+    display:grid;
+    grid-template-columns: .85fr 1.15fr;
+    gap:64px; align-items:center;
+  }
+  .tentang-art{
+    position:relative;
+    aspect-ratio: 1/1;
+    max-width:400px;
+  }
+  .tentang-art .shape{
+    position:absolute; inset:0;
+    background: linear-gradient(150deg, var(--light), var(--mid));
+    border-radius: var(--radius-blob);
+    display:flex; align-items:center; justify-content:center;
+    animation: morph 10s ease-in-out infinite alternate;
+  }
+  .tentang-art img{ width:50%; filter: drop-shadow(0 14px 24px rgba(7,27,18,.25)); }
+  .tentang-copy .kicker{ color:var(--mid); font-weight:600; font-size:.95rem; display:block; margin-bottom:10px; }
+  .tentang-copy h2{ font-size: clamp(1.9rem, 3.4vw, 2.5rem); margin-bottom:20px; }
+  .tentang-copy p{ color:var(--text-soft); font-size:1.03rem; margin-bottom:16px; max-width:58ch; }
+  .stat-row{ display:flex; gap:40px; margin-top:32px; flex-wrap:wrap; }
+  .stat-row .num{ font-family:'Bricolage Grotesque', sans-serif; font-weight:700; font-size:2rem; color:var(--ink); }
+  .stat-row .lbl{ font-size:.85rem; color:var(--text-soft); }
+
+  /* ---------- CTA BANNER ---------- */
+  .cta-banner{
+    background: var(--pale);
+    border-radius: 40px;
+    margin: 0 28px;
+    padding: 70px 48px;
+    text-align:center;
+    position:relative;
+    overflow:hidden;
+  }
+  .cta-banner h2{ font-size: clamp(1.9rem, 4vw, 2.5rem); max-width:20ch; margin: 0 auto 16px; }
+  .cta-banner p{ color:var(--text-soft); max-width:48ch; margin: 0 auto 30px; }
+  .cta-form{ display:flex; justify-content:center; gap:12px; flex-wrap:wrap; }
+  .cta-form input{
+    font-family:inherit; font-size:.98rem; padding: 15px 22px;
+    border-radius:100px; border:1.5px solid rgba(7,27,18,.18);
+    background:var(--white); min-width:260px;
+  }
+  .cta-form input:focus{ outline: 3px solid var(--mid); outline-offset:2px; border-color:transparent; }
+  .cta-form button{
+    background:var(--ink); color:var(--white); padding:15px 30px;
+    border-radius:100px; font-weight:600;
+    transition: background .2s ease, box-shadow .2s ease;
+  }
+  .cta-form button:hover{ background:var(--mid); box-shadow: 0 10px 24px rgba(28,122,70,.3); }
+  .form-note{ font-size:.82rem; color:var(--text-soft); margin-top:14px; opacity:.75; }
+
+  /* ---------- FOOTER ---------- */
+  footer{ background: var(--ink); color: rgba(255,255,255,.7); padding: 70px 0 30px; margin-top:110px; }
+  .footer-top{
+    display:grid; grid-template-columns: 1.4fr 1fr 1fr 1fr;
+    gap:40px; padding-bottom:50px; border-bottom:1px solid rgba(255,255,255,.12);
+  }
+  .footer-brand .brand span{ color:var(--white); }
+  .footer-brand p{ margin-top:16px; font-size:.92rem; max-width:32ch; color:rgba(255,255,255,.55); }
+  .footer-col h4{ color:var(--white); font-family:'Bricolage Grotesque', sans-serif; font-weight:600; font-size:.98rem; margin-bottom:16px; }
+  .footer-col ul{ list-style:none; display:flex; flex-direction:column; gap:10px; }
+  .footer-col a{ font-size:.92rem; transition:color .2s ease; }
+  .footer-col a:hover{ color:var(--light); }
+  .footer-bottom{
+    display:flex; justify-content:space-between; align-items:center;
+    padding-top:26px; font-size:.85rem; color:rgba(255,255,255,.45); flex-wrap:wrap; gap:12px;
+  }
+
+  /* ---------- MODAL ---------- */
+  .modal-overlay{
+    position:fixed; inset:0;
+    background:rgba(7,27,18,.72);
+    backdrop-filter: blur(6px);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+    z-index:2000;
+    opacity:0;
+    pointer-events:none;
+    transition: opacity .25s ease;
+  }
+  .modal-overlay.active{ opacity:1; pointer-events:auto; }
+  .modal-panel{
+    background:var(--white);
+    color:var(--ink);
+    border-radius:26px;
+    padding:38px 32px;
+    width:100%;
+    max-width:420px;
+    max-height:88vh;
+    overflow-y:auto;
+    position:relative;
+    transform: translateY(16px) scale(.98);
+    transition: transform .25s ease;
+  }
+  .modal-overlay.active .modal-panel{ transform: translateY(0) scale(1); }
+  .modal-panel-lg{ max-width:560px; }
+  .modal-close{
+    position:absolute; top:20px; right:20px;
+    width:34px; height:34px;
+    border-radius:50%;
+    background:var(--pale);
+    color:var(--ink);
+    display:flex; align-items:center; justify-content:center;
+    transition: background .2s ease;
+  }
+  .modal-close:hover{ background:var(--light); }
+  .modal-kicker{ color:var(--mid); font-weight:600; font-size:.85rem; display:block; margin-bottom:6px; }
+  .modal-panel h3{ font-family:'Bricolage Grotesque', sans-serif; font-size:1.5rem; margin-bottom:22px; }
+  .modal-panel form{ display:flex; flex-direction:column; gap:16px; }
+  .modal-panel label{
+    display:flex; flex-direction:column; gap:6px;
+    font-size:.85rem; font-weight:600; color:var(--text-soft);
+    text-align:left;
+  }
+  .modal-panel input, .modal-panel textarea{
+    font-family:inherit; font-size:.95rem;
+    padding:12px 16px;
+    border-radius:14px;
+    border:1.5px solid rgba(7,27,18,.15);
+    background:var(--pale);
+    color:var(--ink);
+    resize:vertical;
+  }
+  .modal-panel input:focus, .modal-panel textarea:focus{
+    outline:none; border-color:var(--mid); background:var(--white);
+  }
+  .modal-error{
+    display:none;
+    color:#C0392B;
+    font-size:.85rem;
+    margin-top:-6px;
+  }
+  .modal-error.show{ display:block; }
+
+  .admin-form{ margin-bottom:30px; padding-bottom:28px; border-bottom:1px solid rgba(7,27,18,.1); }
+  .admin-list-head{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:14px;
+  }
+  .admin-list-head h4{ font-family:'Bricolage Grotesque', sans-serif; font-size:1.05rem; }
+  .btn-small{
+    font-size:.8rem; font-weight:600;
+    background:var(--pale); color:var(--ink);
+    padding:8px 14px; border-radius:100px;
+    transition: background .2s ease;
+  }
+  .btn-small:hover{ background:var(--light); }
+  .admin-list{ display:flex; flex-direction:column; gap:10px; margin-bottom:22px; max-height:240px; overflow-y:auto; }
+  .admin-item{
+    display:flex; align-items:center; gap:12px;
+    background:var(--pale);
+    border-radius:14px;
+    padding:10px 12px;
+  }
+  .admin-item img{ width:52px; height:32px; object-fit:cover; border-radius:8px; flex-shrink:0; }
+  .admin-item .info{ flex:1; min-width:0; }
+  .admin-item .info .t{ font-size:.88rem; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .admin-item .info .l{ font-size:.76rem; color:var(--text-soft); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .admin-item button{
+    flex-shrink:0;
+    width:30px; height:30px;
+    border-radius:50%;
+    background:#FCE4E1;
+    color:#C0392B;
+    font-size:.9rem;
+    display:flex; align-items:center; justify-content:center;
+    transition: background .2s ease;
+  }
+  .admin-item button:hover{ background:#F5C6C0; }
+  .admin-note{
+    font-size:.8rem; color:var(--text-soft);
+    background:var(--pale);
+    padding:12px 14px;
+    border-radius:14px;
+    margin-bottom:18px;
+    line-height:1.5;
+  }
+  .admin-note code{ background:rgba(7,27,18,.08); padding:1px 6px; border-radius:6px; font-size:.78rem; }
+  .btn-ghost-dark{
+    width:100%;
+    text-align:center;
+    padding:13px;
+    border-radius:100px;
+    border:1.5px solid rgba(7,27,18,.15);
+    color:var(--ink);
+    font-weight:600;
+    font-size:.92rem;
+    transition: background .2s ease;
+  }
+  .btn-ghost-dark:hover{ background:var(--pale); }
+
+  .projek-empty{
+    grid-column: 1 / -1;
+    text-align:center;
+    padding:50px 20px;
+    color:rgba(255,255,255,.5);
+    font-size:.95rem;
+  }
+
+  /* ---------- RESPONSIVE ---------- */
+  @media (min-width: 861px){ .nav-cta{ display:flex; } .burger{ display:none; } }
+  @media (max-width: 860px){
+    nav ul{ display:none; }
+    .hero-inner{ grid-template-columns: 1fr; }
+    .hero-art{ order:-1; margin-bottom:10px; height:280px; }
+    .orbit-ring.r2{ display:none; }
+    .skills-grid{ grid-template-columns: 1fr 1fr; }
+    .projek-grid{ grid-template-columns: 1fr; }
+    .tentang{ grid-template-columns: 1fr; }
+    .tentang-art{ margin: 0 auto; }
+    .footer-top{ grid-template-columns: 1fr 1fr; }
+    .cta-banner{ margin: 0 16px; padding: 56px 26px; }
+  }
+  @media (max-width: 520px){
+    .wrap{ padding: 0 20px; }
+    .hero{ padding: 130px 0 70px; }
+    .skills-grid{ grid-template-columns: 1fr; }
+    .footer-top{ grid-template-columns: 1fr; }
+    .btn-row{ flex-direction:column; }
+    .btn-row a{ text-align:center; }
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor-dot" id="cursorDot"></div>
+<div class="progress-bar" id="progressBar"></div>
+
+<header id="siteHeader">
+  <div class="wrap nav-inner">
+    <a href="#top" class="brand">
+      <img src="https://i.ibb.co/PvtKBPC6/file-000000008afc81f5a4251cf2b3c49e32.png" alt="Logo Drizz">
+      <span>Drizz</span>
+    </a>
+    <nav>
+      <ul>
+        <li><a href="#kemahiran">Kemahiran</a></li>
+        <li><a href="#projek">Projek</a></li>
+        <li><a href="#tentang">Tentang</a></li>
+        <li><a href="#hubungi">Hubungi</a></li>
+      </ul>
+    </nav>
+    <div class="nav-cta">
+      <a href="#hubungi" data-magnetic>Hubungi Saya</a>
+    </div>
+    <button class="burger" aria-label="Buka menu"><span></span><span></span><span></span></button>
+  </div>
+</header>
+
+<main id="top">
+
+  <section class="hero">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="wrap hero-inner">
+      <div class="reveal in">
+        <span class="eyebrow-tag"><span class="dot"></span>Terbuka untuk projek baharu</span>
+        <h1>Membina antara muka yang terasa <em>hidup</em></h1>
+        <div class="role-line"><span id="typedRole"></span><span class="cursor-blink"></span></div>
+        <p>Saya Drizz — fokus pada butiran kecil dalam reka bentuk digital: jarak, pergerakan dan rentak interaksi yang buat sesuatu produk terasa lancar untuk digunakan.</p>
+        <div class="btn-row">
+          <a href="#hubungi" class="btn-primary" data-magnetic>Hubungi Saya</a>
+          <a href="#kemahiran" class="btn-ghost">Lihat Kemahiran</a>
+        </div>
+      </div>
+      <div class="hero-art">
+        <div class="orbit-ring r2">
+          <div class="chip chip-1">Figma</div>
+          <div class="chip chip-2">Tailwind</div>
+        </div>
+        <div class="orbit-ring r1">
+          <div class="chip chip-3">React</div>
+          <div class="chip chip-4">CSS</div>
+        </div>
+        <div class="orbit-core">
+          <img src="https://i.ibb.co/PvtKBPC6/file-000000008afc81f5a4251cf2b3c49e32.png" alt="Logo Drizz">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="marquee-strip">
+    <div class="marquee-track">
+      <span>Reka Bentuk Antara Muka</span>
+      <span>Kod Yang Kemas</span>
+      <span>Interaksi Yang Lancar</span>
+      <span>Sistem Reka Bentuk</span>
+      <span>Reka Bentuk Antara Muka</span>
+      <span>Kod Yang Kemas</span>
+      <span>Interaksi Yang Lancar</span>
+      <span>Sistem Reka Bentuk</span>
+    </div>
+  </div>
+
+  <section id="kemahiran">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="kicker">Kemahiran</span>
+        <h2>Gabungan reka bentuk dan kod yang saya asah setiap hari</h2>
+        <p>Dari sketsa awal di Figma sampai komponen hidup di pelayar — saya kendalikan keseluruhan aliran kerja.</p>
+      </div>
+      <div class="skills-grid">
+        <div class="skill-card reveal" data-tilt>
+          <div class="skill-icon">◧</div>
+          <h3>Reka Bentuk UI</h3>
+          <p>Wireframe, prototaip dan sistem reka bentuk yang konsisten dari kecil hingga besar.</p>
+        </div>
+        <div class="skill-card reveal" data-tilt>
+          <div class="skill-icon">⌘</div>
+          <h3>Pembangunan Front-end</h3>
+          <p>React, Next.js dan CSS moden untuk ubah reka bentuk jadi antara muka yang berfungsi.</p>
+        </div>
+        <div class="skill-card reveal" data-tilt>
+          <div class="skill-icon">▤</div>
+          <h3>Sistem Komponen</h3>
+          <p>Bina komponen boleh guna semula supaya pasukan reka bentuk dan kod sentiasa sehala.</p>
+        </div>
+        <div class="skill-card reveal" data-tilt>
+          <div class="skill-icon">✦</div>
+          <h3>Motion & Interaksi</h3>
+          <p>Animasi halus yang beri maklum balas, bukan sekadar hiasan tanpa tujuan.</p>
+        </div>
+        <div class="skill-card reveal" data-tilt>
+          <div class="skill-icon">◎</div>
+          <h3>Kebolehcapaian</h3>
+          <p>Kontras, fokus papan kekunci dan struktur yang boleh digunakan semua orang.</p>
+        </div>
+        <div class="skill-card reveal" data-tilt>
+          <div class="skill-icon">▲</div>
+          <h3>Prestasi</h3>
+          <p>Optimumkan setiap muatan halaman supaya antara muka terasa pantas dan ringan.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="projek" class="projek-section">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="kicker">Projek</span>
+        <h2>Ruang untuk projek akan datang</h2>
+        <p>Bahagian ini sedang disediakan — pautan dan butiran projek akan diletakkan di sini tidak lama lagi.</p>
+      </div>
+      <div class="projek-grid" id="projekGrid"></div>
+    </div>
+  </section>
+
+  <section id="tentang">
+    <div class="wrap tentang">
+      <div class="tentang-art reveal">
+        <div class="shape">
+          <img src="https://i.ibb.co/PvtKBPC6/file-000000008afc81f5a4251cf2b3c49e32.png" alt="Logo Drizz">
+        </div>
+      </div>
+      <div class="tentang-copy reveal">
+        <span class="kicker">Tentang Saya</span>
+        <h2>Fokus pada butiran yang selalunya terlepas pandang</h2>
+        <p>Saya percaya antara muka yang baik bukan tentang menambah lebih banyak elemen, tapi mengasah setiap satu sehingga ia terasa tepat — jarak yang betul, warna yang betul, pergerakan yang betul pada masa yang betul.</p>
+        <p>Setiap projek saya mula dengan soalan yang sama: apa yang pengguna perlu rasa pada saat ini? Jawapan itu yang bentuk setiap keputusan reka bentuk seterusnya.</p>
+        <div class="stat-row">
+          <div><div class="num">10+</div><div class="lbl">Alatan & rangka kerja</div></div>
+          <div><div class="num">100%</div><div class="lbl">Fokus pada butiran</div></div>
+          <div><div class="num">A11y</div><div class="lbl">Prinsip utama</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+</main>
+
+<footer id="hubungi">
+  <div class="wrap">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <a href="#top" class="brand">
+          <img src="https://i.ibb.co/PvtKBPC6/file-000000008afc81f5a4251cf2b3c49e32.png" alt="Logo Drizz" style="width:38px;height:38px;">
+          <span>Drizz</span>
+        </a>
+        <p>UI Developer yang fokus pada reka bentuk bersih dan interaksi yang terasa lancar.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Jelajah</h4>
+        <ul>
+          <li><a href="#kemahiran">Kemahiran</a></li>
+          <li><a href="#projek">Projek</a></li>
+          <li><a href="#tentang">Tentang</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Hubungi</h4>
+        <ul>
+          <li><a href="mailto:halo@drizz.dev">halo@drizz.dev</a></li>
+          <li><a href="tel:+60123456789">+60 12-345 6789</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Sosial</h4>
+        <ul>
+          <li><a href="#">GitHub</a></li>
+          <li><a href="#">LinkedIn</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Drizz. Hak cipta terpelihara.</span>
+      <span>Dibina dengan teliti</span>
+    </div>
+  </div>
+</footer>
+
+<!-- ================= MODAL: LOGIN ADMIN ================= -->
+<div class="modal-overlay" id="loginOverlay">
+  <div class="modal-panel">
+    <button class="modal-close" id="loginClose" aria-label="Tutup">✕</button>
+    <span class="modal-kicker">Akses Terhad</span>
+    <h3>Log Masuk Admin</h3>
+    <form id="loginForm">
+      <label>Email
+        <input type="email" id="loginEmail" placeholder="nama@email.com" required>
+      </label>
+      <label>Kata Laluan
+        <input type="password" id="loginPassword" placeholder="••••••••" required>
+      </label>
+      <p class="modal-error" id="loginError">Email atau kata laluan salah.</p>
+      <button type="submit" class="btn-primary" style="width:100%; justify-content:center;">Log Masuk</button>
+    </form>
+  </div>
+</div>
+
+<!-- ================= MODAL: PANEL ADMIN ================= -->
+<div class="modal-overlay" id="adminOverlay">
+  <div class="modal-panel modal-panel-lg">
+    <button class="modal-close" id="adminClose" aria-label="Tutup">✕</button>
+    <span class="modal-kicker">Panel Admin</span>
+    <h3>Urus Projek</h3>
+
+    <form id="addProjectForm" class="admin-form">
+      <label>URL Gambar Banner
+        <input type="url" id="fieldImage" placeholder="https://..." required>
+      </label>
+      <label>URL Pautan Projek
+        <input type="url" id="fieldLink" placeholder="https://..." required>
+      </label>
+      <label>Caption / Tajuk
+        <input type="text" id="fieldTitle" placeholder="Contoh: Store Server BlixSmp" required>
+      </label>
+      <label>Kategori (kecil)
+        <input type="text" id="fieldTag" placeholder="Contoh: Hosting & Infrastruktur">
+      </label>
+      <label>Penerangan Ringkas
+        <textarea id="fieldDesc" rows="2" placeholder="Penerangan pendek tentang projek ini"></textarea>
+      </label>
+      <label>Label Badge
+        <input type="text" id="fieldBadge" placeholder="Contoh: Coming Soon / Lawat Store" value="Lawat Projek">
+      </label>
+      <button type="submit" class="btn-primary" style="width:100%; justify-content:center;">+ Tambah Projek</button>
+    </form>
+
+    <div class="admin-list-head">
+      <h4>Projek Semasa</h4>
+      <button id="copyJsonBtn" class="btn-small">Salin JSON</button>
+    </div>
+    <div id="adminList" class="admin-list"></div>
+
+    <p class="admin-note">Perubahan disimpan pada penyemak imbas ini sahaja. Untuk kemas kini kekal di laman untuk semua pelawat, klik <strong>Salin JSON</strong> dan gantikan senarai <code>defaultProjects</code> dalam fail HTML, kemudian muat naik semula.</p>
+    <button id="logoutBtn" class="btn-ghost-dark">Log Keluar</button>
+  </div>
+</div>
+
+<script>
+  // header on scroll + progress bar
+  const header = document.getElementById('siteHeader');
+  const progressBar = document.getElementById('progressBar');
+  window.addEventListener('scroll', () => {
+    header.classList.toggle('scrolled', window.scrollY > 20);
+    const h = document.documentElement;
+    const pct = (h.scrollTop) / (h.scrollHeight - h.clientHeight) * 100;
+    progressBar.style.width = pct + '%';
+  });
+
+  // custom cursor
+  const cursorDot = document.getElementById('cursorDot');
+  let mx = 0, my = 0, cx = 0, cy = 0;
+  window.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+  function animateCursor(){
+    cx += (mx - cx) * 0.2;
+    cy += (my - cy) * 0.2;
+    cursorDot.style.transform = `translate(${cx}px, ${cy}px) translate(-50%,-50%)`;
+    requestAnimationFrame(animateCursor);
+  }
+  animateCursor();
+  document.querySelectorAll('a, button, .skill-card').forEach(el => {
+    el.addEventListener('mouseenter', () => cursorDot.classList.add('hovering'));
+    el.addEventListener('mouseleave', () => cursorDot.classList.remove('hovering'));
+  });
+
+  // scroll reveal
+  const revealEls = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if(entry.isIntersecting){ entry.target.classList.add('in'); io.unobserve(entry.target); }
+    });
+  }, { threshold: 0.15 });
+  revealEls.forEach(el => io.observe(el));
+
+  // typing effect
+  const roles = ['UI Developer', 'Frontend Engineer', 'Pembina Sistem Reka Bentuk', 'Pereka Interaksi'];
+  const typedEl = document.getElementById('typedRole');
+  let roleIdx = 0, charIdx = 0, deleting = false;
+  function typeLoop(){
+    const current = roles[roleIdx];
+    if(!deleting){
+      charIdx++;
+      typedEl.textContent = current.slice(0, charIdx);
+      if(charIdx === current.length){ deleting = true; setTimeout(typeLoop, 1400); return; }
+    } else {
+      charIdx--;
+      typedEl.textContent = current.slice(0, charIdx);
+      if(charIdx === 0){ deleting = false; roleIdx = (roleIdx + 1) % roles.length; }
+    }
+    setTimeout(typeLoop, deleting ? 40 : 70);
+  }
+  typeLoop();
+
+  // tilt on skill cards
+  document.querySelectorAll('[data-tilt]').forEach(card => {
+    card.addEventListener('mousemove', e => {
+      const r = card.getBoundingClientRect();
+      const px = (e.clientX - r.left) / r.width - 0.5;
+      const py = (e.clientY - r.top) / r.height - 0.5;
+      card.style.transform = `perspective(600px) rotateX(${py * -8}deg) rotateY(${px * 8}deg) translateY(-4px)`;
+    });
+    card.addEventListener('mouseleave', () => { card.style.transform = ''; });
+  });
+
+  // magnetic buttons
+  document.querySelectorAll('[data-magnetic]').forEach(btn => {
+    btn.addEventListener('mousemove', e => {
+      const r = btn.getBoundingClientRect();
+      const x = e.clientX - r.left - r.width / 2;
+      const y = e.clientY - r.top - r.height / 2;
+      btn.style.transform = `translate(${x * 0.25}px, ${y * 0.4}px)`;
+    });
+    btn.addEventListener('mouseleave', () => { btn.style.transform = ''; });
+  });
+  // ================= SISTEM PROJEK + PANEL ADMIN (API SEBENAR) =================
+  // Nota: email & password admin TIDAK disimpan di sini lagi.
+  // Ia disemak di server (Cloudflare Pages Function) — lihat functions/api/login.js
+  let projects = [];
+  let adminAuthHeader = null; // "Basic base64(email:password)" — hanya dalam memori semasa sesi
+
+  function escapeHtml(str){
+    const div = document.createElement('div');
+    div.textContent = str || '';
+    return div.innerHTML;
+  }
+
+  async function fetchProjects(){
+    try{
+      const res = await fetch('/api/projects');
+      if(!res.ok) throw new Error('fetch failed');
+      projects = await res.json();
+    }catch(e){
+      // Fallback jika API belum disediakan (contoh: semasa buka fail secara offline)
+      projects = [];
+      console.warn('Tidak dapat capai /api/projects — pastikan Cloudflare Pages Functions & KV sudah disediakan.');
+    }
+    renderProjects();
+  }
+
+  function renderProjects(){
+    const grid = document.getElementById('projekGrid');
+    if(!grid) return;
+    if(projects.length === 0){
+      grid.innerHTML = '<div class="projek-empty">Belum ada projek buat masa ini. Nantikan kemas kini seterusnya.</div>';
+      return;
+    }
+    grid.innerHTML = projects.map(p => `
+      <a href="${p.link && p.link !== '#' ? escapeHtml(p.link) : 'javascript:void(0)'}" ${p.link && p.link !== '#' ? 'target="_blank" rel="noopener"' : ''} class="projek-card reveal in" data-magnetic>
+        <div class="projek-banner">
+          <img src="${escapeHtml(p.image)}" alt="Banner ${escapeHtml(p.title)}">
+          <span class="badge-soon"><span class="ping"></span>${escapeHtml(p.badge) || 'Lihat Projek'}</span>
+        </div>
+        <div class="projek-card-body">
+          <span class="tag">${escapeHtml(p.tag) || 'Projek'}</span>
+          <h3>${escapeHtml(p.title)}</h3>
+          <p>${escapeHtml(p.desc)}</p>
+        </div>
+      </a>
+    `).join('');
+    attachMagnetic(grid.querySelectorAll('[data-magnetic]'));
+  }
+
+  function renderAdminList(){
+    const list = document.getElementById('adminList');
+    if(!list) return;
+    if(projects.length === 0){
+      list.innerHTML = '<p style="font-size:.85rem;color:var(--text-soft);">Tiada projek lagi.</p>';
+      return;
+    }
+    list.innerHTML = projects.map((p) => `
+      <div class="admin-item">
+        <img src="${escapeHtml(p.image)}" alt="">
+        <div class="info">
+          <div class="t">${escapeHtml(p.title)}</div>
+          <div class="l">${escapeHtml(p.link)}</div>
+        </div>
+        <button data-remove="${escapeHtml(p.id)}" aria-label="Buang projek">✕</button>
+      </div>
+    `).join('');
+    list.querySelectorAll('[data-remove]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.getAttribute('data-remove');
+        btn.disabled = true;
+        try{
+          const res = await fetch('/api/projects?id=' + encodeURIComponent(id), {
+            method: 'DELETE',
+            headers: { 'Authorization': adminAuthHeader }
+          });
+          if(!res.ok) throw new Error('gagal buang');
+          await fetchProjects();
+          renderAdminList();
+        }catch(e){
+          alert('Gagal buang projek. Sila cuba lagi.');
+          btn.disabled = false;
+        }
+      });
+    });
+  }
+
+  function openModal(el){ el.classList.add('active'); }
+  function closeModal(el){ el.classList.remove('active'); }
+
+  const loginOverlay = document.getElementById('loginOverlay');
+  const adminOverlay = document.getElementById('adminOverlay');
+  const loginForm = document.getElementById('loginForm');
+  const loginError = document.getElementById('loginError');
+
+  function openLoginModal(){
+    loginError.classList.remove('show');
+    loginForm.reset();
+    openModal(loginOverlay);
+  }
+
+  // Cara 1 — taip perkataan "admin" di mana-mana pada laman (tak perlu klik apa-apa medan dulu)
+  let keyBuffer = '';
+  window.addEventListener('keydown', (e) => {
+    // abaikan jika sedang menaip dalam input/textarea (elak konflik dengan medan borang biasa)
+    const tag = document.activeElement.tagName;
+    if(tag === 'INPUT' || tag === 'TEXTAREA') return;
+    if(e.key.length === 1){
+      keyBuffer = (keyBuffer + e.key).slice(-5).toLowerCase();
+      if(keyBuffer === 'admin'){
+        keyBuffer = '';
+        openLoginModal();
+      }
+    }
+  });
+
+  // Cara 2 — lawati pautan khas: https://drizzev.web.id/#admin-login
+  if(window.location.hash === '#admin-login'){
+    openLoginModal();
+    history.replaceState(null, '', window.location.pathname + window.location.search);
+  }
+  document.getElementById('loginClose').addEventListener('click', () => closeModal(loginOverlay));
+  document.getElementById('adminClose').addEventListener('click', () => closeModal(adminOverlay));
+  [loginOverlay, adminOverlay].forEach(ov => {
+    ov.addEventListener('click', e => { if(e.target === ov) closeModal(ov); });
+  });
+
+  loginForm.addEventListener('submit', async e => {
+    e.preventDefault();
+    const email = document.getElementById('loginEmail').value.trim();
+    const pass = document.getElementById('loginPassword').value;
+    const submitBtn = loginForm.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    try{
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password: pass })
+      });
+      const data = await res.json();
+      if(res.ok && data.ok){
+        adminAuthHeader = 'Basic ' + btoa(email + ':' + pass);
+        closeModal(loginOverlay);
+        renderAdminList();
+        openModal(adminOverlay);
+      } else {
+        loginError.classList.add('show');
+      }
+    }catch(e){
+      loginError.textContent = 'Tidak dapat sambung ke server. Pastikan laman ini di-host di Cloudflare Pages.';
+      loginError.classList.add('show');
+    }
+    submitBtn.disabled = false;
+  });
+
+  document.getElementById('logoutBtn').addEventListener('click', () => {
+    adminAuthHeader = null;
+    closeModal(adminOverlay);
+  });
+
+  document.getElementById('addProjectForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    const newProject = {
+      image: document.getElementById('fieldImage').value.trim(),
+      link: document.getElementById('fieldLink').value.trim(),
+      title: document.getElementById('fieldTitle').value.trim(),
+      tag: document.getElementById('fieldTag').value.trim(),
+      desc: document.getElementById('fieldDesc').value.trim(),
+      badge: document.getElementById('fieldBadge').value.trim() || 'Lihat Projek'
+    };
+    submitBtn.disabled = true;
+    try{
+      const res = await fetch('/api/projects', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': adminAuthHeader },
+        body: JSON.stringify(newProject)
+      });
+      if(!res.ok) throw new Error('gagal tambah');
+      await fetchProjects();
+      renderAdminList();
+      e.target.reset();
+      document.getElementById('fieldBadge').value = 'Lihat Projek';
+    }catch(e){
+      alert('Gagal tambah projek. Sila semak semua medan diisi.');
+    }
+    submitBtn.disabled = false;
+  });
+
+  document.getElementById('copyJsonBtn').addEventListener('click', () => {
+    const json = JSON.stringify(projects, null, 2);
+    navigator.clipboard.writeText(json).then(() => {
+      const btn = document.getElementById('copyJsonBtn');
+      const original = btn.textContent;
+      btn.textContent = 'Disalin!';
+      setTimeout(() => { btn.textContent = original; }, 1600);
+    });
+  });
+
+  function attachMagnetic(nodeList){
+    nodeList.forEach(btn => {
+      btn.addEventListener('mousemove', e => {
+        const r = btn.getBoundingClientRect();
+        const x = e.clientX - r.left - r.width / 2;
+        const y = e.clientY - r.top - r.height / 2;
+        btn.style.transform = `translate(${x * 0.06}px, ${y * 0.06}px)`;
+      });
+      btn.addEventListener('mouseleave', () => { btn.style.transform = ''; });
+    });
+  }
+
+  fetchProjects();
+</script>
+
+</body>
+</html>
