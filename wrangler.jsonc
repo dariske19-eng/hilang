@@ -1,0 +1,16 @@
+{
+  "name": "drizz",
+  "compatibility_date": "2026-01-01",
+  "main": "src/index.js",
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "not_found_handling": "404-page"
+  },
+  "kv_namespaces": [
+    {
+      "binding": "PROJECTS_KV",
+      "id": "GANTIKAN_DENGAN_ID_NAMESPACE_KV_ANDA"
+    }
+  ]
+}
